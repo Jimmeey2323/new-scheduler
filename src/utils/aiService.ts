@@ -62,7 +62,7 @@ export class AIService {
     
     try {
       const response = await this.callAI(prompt);
-      const optimizedSchedule = this.parseOptimizedScheduleResponse(response, historicData);
+      const optimizedSchedule = await this.parseOptimizedScheduleResponse(response, historicData);
       return optimizedSchedule;
     } catch (error) {
       console.warn('AI optimization error, falling back to intelligent local optimization:', error);
@@ -315,7 +315,7 @@ export class AIService {
     currentSchedule: ScheduledClass[],
     customTeachers: any[],
     options: any
-): ScheduledClass[] {
+  ): Promise<ScheduledClass[]> {
     // Use the enhanced generateIntelligentSchedule function from classUtils
     return generateIntelligentSchedule(historicData, customTeachers, {
       prioritizeTopPerformers: true,
@@ -327,7 +327,7 @@ export class AIService {
     });
   }
 
-  private parseOptimizedScheduleResponse(response: string, historicData: ClassData[]): ScheduledClass[] {
+  private async parseOptimizedScheduleResponse(response: string, historicData: ClassData[]): Promise<ScheduledClass[]> {
     try {
       const parsed = JSON.parse(response);
       const schedule = parsed.optimizedSchedule || [];
@@ -347,7 +347,7 @@ export class AIService {
       }));
     } catch (error) {
       console.error('Failed to parse optimized schedule response:', error);
-      return this.generateIntelligentLocalSchedule(historicData, [], [], {});
+      return await this.generateIntelligentLocalSchedule(historicData, [], [], {});
     }
   }
 

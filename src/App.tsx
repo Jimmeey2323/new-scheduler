@@ -239,8 +239,8 @@ function App() {
     setIsPopulatingTopClasses(true);
 
     try {
-      // Get top performing classes (>5 avg participants)
-      const topClasses = getTopPerformingClasses(data, 5);
+      // Get top performing classes (>5.0 avg participants)
+      const topClasses = getTopPerformingClasses(data, 5.0);
       console.log('Top performing classes found:', topClasses.length);
 
       if (topClasses.length === 0) {
@@ -287,7 +287,7 @@ function App() {
       if (newScheduledClasses.length > 0) {
         setScheduledClasses(newScheduledClasses);
         setTeacherHours(calculateTeacherHours(newScheduledClasses));
-        alert(`Successfully populated ${newScheduledClasses.length} top performing classes!`);
+        alert(`Successfully populated ${newScheduledClasses.length} top performing classes (>5.0 avg participants)!`);
       } else {
         alert('No classes could be scheduled due to teacher hour constraints');
       }

@@ -86,13 +86,14 @@ const SmartOptimizer: React.FC<SmartOptimizerProps> = ({
                   
                   newSchedule.push(newClass);
                   
-                  newSuggestions.push({
-                    type: 'format_change',
-                    originalClass: newClass,
-                    suggestedClass: newClass,
-                    reason: `High-performing class at peak time`,
-                    impact: `Expected ${bestClass.participants} participants, ₹${Math.round(bestClass.totalRevenue)} revenue`
-                  });
+          newSuggestions.push({
+            type: 'format_change',
+            originalClass: newClass,
+            suggestedClass: newClass,
+            reason: `High-performing class at peak time`,
+            impact: `Expected ${bestClass.participants} participants, ₹${Math.round(bestClass.totalRevenue)} revenue`,
+            priority: 8
+          });
                 }
               }
             }
@@ -121,7 +122,8 @@ const SmartOptimizer: React.FC<SmartOptimizerProps> = ({
                 teacherLastName: bestPerformer.teacherLastName
               },
               reason: `${bestPerformer.teacherName} has better historic performance`,
-              impact: `+${Math.round(bestPerformer.participants - (historicData.reduce((sum, item) => sum + item.participants, 0) / historicData.length))} participants on average`
+              impact: `+${Math.round(bestPerformer.participants - (historicData.reduce((sum, item) => sum + item.participants, 0) / historicData.length))} participants on average`,
+              priority: 7
             });
           }
         }
