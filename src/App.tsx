@@ -13,18 +13,16 @@ import {
   Zap
 } from 'lucide-react';
 import CSVUpload from './components/CSVUpload';
-import ScheduleGrid from './components/ScheduleGrid';
 import WeeklyCalendar from './components/WeeklyCalendar';
-import MonthlyCalendar from './components/MonthlyCalendar';
-import YearlyCalendar from './components/YearlyCalendar';
-import Analytics from './components/Analytics';
-import TeacherHoursTracker from './components/TeacherHoursTracker';
+import MonthlyView from './components/MonthlyView';
+import YearlyView from './components/YearlyView';
+import AnalyticsView from './components/AnalyticsView';
+import TeacherHourTracker from './components/TeacherHourTracker';
 import ClassModal from './components/ClassModal';
-import TopClassesModal from './components/TopClassesModal';
 import SmartOptimizer from './components/SmartOptimizer';
-import AIOptimizer from './components/AIOptimizer';
+import DailyAIOptimizer from './components/DailyAIOptimizer';
 import ExportModal from './components/ExportModal';
-import SettingsModal from './components/SettingsModal';
+import StudioSettings from './components/StudioSettings';
 import { ClassData, ScheduledClass, CustomTeacher, TeacherAvailability } from './types';
 import { 
   saveCSVData, 
@@ -208,7 +206,7 @@ function App() {
           <div className="space-y-6">
             {/* CSV Upload Section */}
             <div className={isDarkMode ? 'bg-gray-800 border-gray-700' : premiumClasses.card.premium}>
-              <CSVUpload onDataLoaded={handleCSVUpload} isDarkMode={isDarkMode} />
+              <CSVUpload onDataUpload={handleCSVUpload} isDarkMode={isDarkMode} />
             </div>
 
             {csvData.length > 0 && (
@@ -286,11 +284,24 @@ function App() {
                     </div>
                   </div>
                   
-                  <ScheduleGrid 
-                    scheduledClasses={scheduledClasses}
-                    onClassClick={handleClassClick}
-                    isDarkMode={isDarkMode}
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {scheduledClasses.map(cls => (
+                      <div 
+                        key={cls.id}
+                        onClick={() => handleClassClick(cls)}
+                        className={`p-4 rounded-lg cursor-pointer transition-all ${
+                          isDarkMode 
+                            ? 'bg-gray-700 hover:bg-gray-600 border border-gray-600' 
+                            : 'bg-gray-50 hover:bg-gray-100 border-2 border-gray-800'
+                        }`}
+                      >
+                        <h4 className="font-bold">{cls.classFormat}</h4>
+                        <p className="text-sm opacity-75">{cls.day} at {cls.time}</p>
+                        <p className="text-xs opacity-50">{cls.location}</p>
+                        <p className="text-xs">{cls.teacherFirstName} {cls.teacherLastName}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </>
             )}
@@ -302,6 +313,9 @@ function App() {
             <WeeklyCalendar 
               scheduledClasses={scheduledClasses}
               csvData={csvData}
+              location="All Locations"
+              onSlotClick={() => {}}
+              onClassEdit={() => {}}
               isDarkMode={isDarkMode}
             />
           </div>
@@ -309,7 +323,7 @@ function App() {
 
         {activeTab === 'monthly' && (
           <div className={isDarkMode ? 'bg-gray-800 rounded-lg' : premiumClasses.card.default}>
-            <MonthlyCalendar 
+            <MonthlyView 
               scheduledClasses={scheduledClasses}
               csvData={csvData}
               isDarkMode={isDarkMode}
@@ -319,7 +333,7 @@ function App() {
 
         {activeTab === 'yearly' && (
           <div className={isDarkMode ? 'bg-gray-800 rounded-lg' : premiumClasses.card.default}>
-            <YearlyCalendar 
+            <YearlyView 
               scheduledClasses={scheduledClasses}
               csvData={csvData}
               isDarkMode={isDarkMode}
@@ -329,7 +343,7 @@ function App() {
 
         {activeTab === 'analytics' && (
           <div className={isDarkMode ? 'bg-gray-800 rounded-lg' : premiumClasses.card.default}>
-            <Analytics 
+            <AnalyticsView 
               csvData={csvData}
               scheduledClasses={scheduledClasses}
               isDarkMode={isDarkMode}
@@ -339,7 +353,7 @@ function App() {
 
         {activeTab === 'tracker' && (
           <div className={isDarkMode ? 'bg-gray-800 rounded-lg' : premiumClasses.card.default}>
-            <TeacherHoursTracker 
+            <TeacherHourTracker 
               scheduledClasses={scheduledClasses}
               csvData={csvData}
               isDarkMode={isDarkMode}
@@ -353,25 +367,10 @@ function App() {
         <ClassModal
           isOpen={!!selectedClass}
           onClose={() => setSelectedClass(null)}
-          classData={selectedClass}
+          selectedClass={selectedClass}
           onUpdate={handleClassUpdate}
           onDelete={handleClassDelete}
           csvData={csvData}
-          isDarkMode={isDarkMode}
-        />
-      )}
-
-      {showTopClasses && (
-        <TopClassesModal
-          isOpen={showTopClasses}
-          onClose={() => setShowTopClasses(false)}
-          csvData={csvData}
-          onScheduleClasses={(classes) => {
-            const newClasses = [...scheduledClasses, ...classes];
-            setScheduledClasses(newClasses);
-            saveScheduledClasses(newClasses);
-            setShowTopClasses(false);
-          }}
           isDarkMode={isDarkMode}
         />
       )}
@@ -388,7 +387,7 @@ function App() {
       )}
 
       {showAIOptimizer && (
-        <AIOptimizer
+        <DailyAIOptimizer
           isOpen={showAIOptimizer}
           onClose={() => setShowAIOptimizer(false)}
           csvData={csvData}
@@ -404,13 +403,12 @@ function App() {
           isOpen={showExportModal}
           onClose={() => setShowExportModal(false)}
           scheduledClasses={scheduledClasses}
-          csvData={csvData}
           isDarkMode={isDarkMode}
         />
       )}
 
       {showSettings && (
-        <SettingsModal
+        <StudioSettings
           isOpen={showSettings}
           onClose={() => setShowSettings(false)}
           customTeachers={customTeachers}

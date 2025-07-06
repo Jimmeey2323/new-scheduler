@@ -40,14 +40,15 @@ export const generateComprehensiveSchedule = (
   const teacherHours: { [key: string]: number } = {};
   const teacherDayLocation: { [key: string]: { [day: string]: string } } = {};
   const teacherDayShift: { [key: string]: { [day: string]: 'morning' | 'evening' } } = {};
-  const locationShiftTrainers: { [key: string]: { [shift: string]: Set<string> } } = {};
+  const locationShiftTrainers: { [key: string]: Set<string> } = {};
 
   // Initialize location shift trainers tracking
   locations.forEach(location => {
-    locationShiftTrainers[location] = { morning: new Set(), evening: new Set() };
+    locationShiftTrainers[`${location}_morning`] = new Set<string>();
+    locationShiftTrainers[`${location}_evening`] = new Set<string>();
     days.forEach(day => {
-      locationShiftTrainers[`${location}_${day}_morning`] = new Set();
-      locationShiftTrainers[`${location}_${day}_evening`] = new Set();
+      locationShiftTrainers[`${location}_${day}_morning`] = new Set<string>();
+      locationShiftTrainers[`${location}_${day}_evening`] = new Set<string>();
     });
   });
 
@@ -81,10 +82,11 @@ export const generateComprehensiveSchedule = (
     }
     
     // Check trainer count per shift per location (max 2-3)
-    const currentTrainerCount = locationShiftTrainers[locationDayShiftKey]?.size || 0;
+    const currentTrainerSet = locationShiftTrainers[locationDayShiftKey];
+    const currentTrainerCount = currentTrainerSet ? currentTrainerSet.size : 0;
     const maxTrainers = location === 'Supreme HQ, Bandra' ? 3 : 2;
     
-    if (currentTrainerCount >= maxTrainers && !locationShiftTrainers[locationDayShiftKey]?.has(teacher)) {
+    if (currentTrainerCount >= maxTrainers && !currentTrainerSet?.has(teacher)) {
       return false;
     }
     
@@ -102,7 +104,7 @@ export const generateComprehensiveSchedule = (
     teacherDayShift[teacher][day] = shift;
     
     if (!locationShiftTrainers[locationDayShiftKey]) {
-      locationShiftTrainers[locationDayShiftKey] = new Set();
+      locationShiftTrainers[locationDayShiftKey] = new Set<string>();
     }
     locationShiftTrainers[locationDayShiftKey].add(teacher);
   };
@@ -150,8 +152,7 @@ export const generateComprehensiveSchedule = (
                 duration: '1',
                 participants: bestClass.participants,
                 revenue: bestClass.totalRevenue,
-                isTopPerformer: bestClass.participants > 8,
-                studioAssigned: availability.suggestedStudio
+                isTopPerformer: bestClass.participants > 8
               };
               
               generatedSchedule.push(newClass);
@@ -220,8 +221,7 @@ export const generateComprehensiveSchedule = (
               duration: '1',
               participants: classData.participants,
               revenue: classData.totalRevenue,
-              isTopPerformer: classData.participants > 8,
-              studioAssigned: availability.suggestedStudio
+              isTopPerformer: classData.participants > 8
             };
             
             generatedSchedule.push(newClass);

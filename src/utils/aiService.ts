@@ -79,6 +79,100 @@ export class AIService {
     }
   }
 
+  private generateIntelligentLocalSchedule(
+    historicData: ClassData[],
+    currentSchedule: ScheduledClass[],
+    customTeachers: any[],
+    options: any
+  ): ScheduledClass[] {
+    // Use the comprehensive scheduler as fallback
+    const { generateComprehensiveSchedule } = require('./comprehensiveScheduler');
+    return generateComprehensiveSchedule(historicData, customTeachers, options);
+  }
+
+  private parseOptimizedScheduleResponse(response: string, historicData: ClassData[]): ScheduledClass[] {
+    try {
+      const parsed = JSON.parse(response);
+      return parsed.optimizedSchedule || [];
+    } catch (error) {
+      console.error('Failed to parse AI schedule response:', error);
+      return [];
+    }
+  }
+
+  private analyzeTimeSlotPerformance(data: ClassData[], location: string, day: string, time: string) {
+    const relevantData = data.filter(item => 
+      item.location === location && 
+      item.dayOfWeek === day && 
+      item.classTime.includes(time.slice(0, 5))
+    );
+
+    if (relevantData.length === 0) {
+      return { peakAttendance: 0, avgRevenue: 0, successRate: 0, bestFormat: 'None' };
+    }
+
+    const totalParticipants = relevantData.reduce((sum, item) => sum + item.participants, 0);
+    const totalRevenue = relevantData.reduce((sum, item) => sum + item.totalRevenue, 0);
+    const successfulClasses = relevantData.filter(item => item.participants > 5).length;
+    
+    const bestFormat = relevantData
+      .sort((a, b) => b.participants - a.participants)[0]?.cleanedClass || 'None';
+
+    return {
+      peakAttendance: Math.max(...relevantData.map(item => item.participants)),
+      avgRevenue: totalRevenue / relevantData.length,
+      successRate: successfulClasses / relevantData.length,
+      bestFormat
+    };
+  }
+
+  private analyzeCompetitorSlots(data: ClassData[], location: string, day: string, time: string) {
+    const hour = parseInt(time.split(':')[0]);
+    const similarTimeSlots = data.filter(item => {
+      const itemHour = parseInt(item.classTime.split(':')[0]);
+      return Math.abs(itemHour - hour) <= 1 && item.location === location && item.dayOfWeek === day;
+    });
+
+    const avgParticipants = similarTimeSlots.length > 0 
+      ? similarTimeSlots.reduce((sum, item) => sum + item.participants, 0) / similarTimeSlots.length 
+      : 0;
+
+    return {
+      similarSlotsAvg: avgParticipants,
+      opportunityScore: Math.min(10, Math.max(1, avgParticipants / 2))
+    };
+  }
+
+  private analyzeLocationPerformance(data: ClassData[]) {
+    const locations = ['Kwality House, Kemps Corner', 'Supreme HQ, Bandra', 'Kenkere House'];
+    
+    return locations.reduce((acc, location) => {
+      const locationData = data.filter(item => item.location === location);
+      if (locationData.length === 0) {
+        acc[location] = { avgParticipants: 0, totalClasses: 0, avgRevenue: 0 };
+        return acc;
+      }
+
+      const totalParticipants = locationData.reduce((sum, item) => sum + item.participants, 0);
+      const totalRevenue = locationData.reduce((sum, item) => sum + item.totalRevenue, 0);
+      
+      acc[location] = {
+        avgParticipants: totalParticipants / locationData.length,
+        totalClasses: locationData.length,
+        avgRevenue: totalRevenue / locationData.length
+      };
+      return acc;
+    }, {} as any);
+  }
+
+  private analyzeTeacherUtilization(schedule: ScheduledClass[]) {
+    return schedule.reduce((acc, cls) => {
+      const teacher = `${cls.teacherFirstName} ${cls.teacherLastName}`;
+      acc[teacher] = (acc[teacher] || 0) + parseFloat(cls.duration);
+      return acc;
+    }, {} as any);
+  }
+
   private buildAdvancedRecommendationPrompt(
     data: ClassData[], 
     day: string, 
