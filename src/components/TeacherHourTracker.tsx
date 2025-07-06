@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Clock, AlertTriangle, CheckCircle, User, TrendingUp, Award, Users, ChevronDown, ChevronUp } from 'lucide-react';
 import { TeacherHours } from '../types';
@@ -5,11 +6,11 @@ import { TeacherHours } from '../types';
 interface TeacherHourTrackerProps {
   teacherHours: TeacherHours;
   isDarkMode: boolean;
+  showCards: boolean;
+  onToggleCards: () => void;
 }
 
-const TeacherHourTracker: React.FC<TeacherHourTrackerProps> = ({ teacherHours, isDarkMode }) => {
-  const [showTeacherCards, setShowTeacherCards] = useState(false);
-
+const TeacherHourTracker: React.FC<TeacherHourTrackerProps> = ({ teacherHours, isDarkMode, showCards, onToggleCards }) => {
   const getStatusColor = (hours: number) => {
     if (hours >= 15) return 'from-red-500 to-red-600';
     if (hours >= 12) return 'from-yellow-500 to-orange-500';
@@ -77,12 +78,12 @@ const TeacherHourTracker: React.FC<TeacherHourTrackerProps> = ({ teacherHours, i
             <div className={textSecondary}>Active Teachers</div>
           </div>
           <button
-            onClick={() => setShowTeacherCards(!showTeacherCards)}
+            onClick={onToggleCards}
             className={`flex items-center px-4 py-2 ${isDarkMode ? 'bg-gray-700/50 hover:bg-gray-600/50' : 'bg-gray-100 hover:bg-gray-200'} rounded-lg transition-colors`}
           >
             <Users className="h-4 w-4 mr-2 text-blue-400" />
             <span className={textPrimary}>Teacher Cards</span>
-            {showTeacherCards ? <ChevronUp className="h-4 w-4 ml-2" /> : <ChevronDown className="h-4 w-4 ml-2" />}
+            {showCards ? <ChevronUp className="h-4 w-4 ml-2" /> : <ChevronDown className="h-4 w-4 ml-2" />}
           </button>
         </div>
       </div>
@@ -108,7 +109,7 @@ const TeacherHourTracker: React.FC<TeacherHourTrackerProps> = ({ teacherHours, i
       </div>
 
       {/* Teacher Cards - Collapsible */}
-      {showTeacherCards && (
+      {showCards && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {teachers.map(([teacherName, hours]) => {
             const isPriority = priorityTeachers.some(name => teacherName.includes(name));

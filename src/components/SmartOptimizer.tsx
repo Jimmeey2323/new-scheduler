@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { X, Brain, TrendingUp, Users, Clock, Target, Zap } from 'lucide-react';
 import { ClassData, ScheduledClass, OptimizationSuggestion } from '../types';
@@ -8,6 +9,7 @@ interface SmartOptimizerProps {
   csvData: ClassData[];
   currentSchedule: ScheduledClass[];
   onOptimize: (optimizedSchedule: ScheduledClass[]) => void;
+  isDarkMode: boolean;
 }
 
 const SmartOptimizer: React.FC<SmartOptimizerProps> = ({
@@ -15,7 +17,8 @@ const SmartOptimizer: React.FC<SmartOptimizerProps> = ({
   onClose,
   csvData,
   currentSchedule,
-  onOptimize
+  onOptimize,
+  isDarkMode
 }) => {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [suggestions, setSuggestions] = useState<OptimizationSuggestion[]>([]);
@@ -147,9 +150,13 @@ const SmartOptimizer: React.FC<SmartOptimizerProps> = ({
 
   if (!isOpen) return null;
 
+  const modalBg = isDarkMode ? 'bg-gray-900' : 'bg-white';
+  const textPrimary = isDarkMode ? 'text-white' : 'text-gray-900';
+  const textSecondary = isDarkMode ? 'text-gray-400' : 'text-gray-600';
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full m-4 max-h-[90vh] overflow-y-auto">
+      <div className={`${modalBg} rounded-lg shadow-xl max-w-4xl w-full m-4 max-h-[90vh] overflow-y-auto`}>
         <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-purple-600 to-pink-600 text-white">
           <div className="flex items-center">
             <Brain className="h-6 w-6 mr-3" />
@@ -167,14 +174,14 @@ const SmartOptimizer: React.FC<SmartOptimizerProps> = ({
           {isOptimizing ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Optimizing Schedule...</h3>
-              <p className="text-gray-600">Analyzing historic data and performance patterns</p>
+              <h3 className={`text-lg font-semibold ${textPrimary} mb-2`}>Optimizing Schedule...</h3>
+              <p className={textSecondary}>Analyzing historic data and performance patterns</p>
             </div>
           ) : (
             <>
               {/* Optimization Summary */}
               <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-lg mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <h3 className={`text-lg font-semibold ${textPrimary} mb-4 flex items-center`}>
                   <Target className="h-5 w-5 mr-2 text-purple-600" />
                   Optimization Summary
                 </h3>
@@ -198,7 +205,7 @@ const SmartOptimizer: React.FC<SmartOptimizerProps> = ({
 
               {/* Suggestions */}
               <div className="space-y-4 mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                <h3 className={`text-lg font-semibold ${textPrimary} flex items-center`}>
                   <Zap className="h-5 w-5 mr-2 text-yellow-600" />
                   Optimization Suggestions
                 </h3>
@@ -259,13 +266,13 @@ const SmartOptimizer: React.FC<SmartOptimizerProps> = ({
               <div className="flex justify-end space-x-3 pt-4 border-t">
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                  className={`px-4 py-2 ${textSecondary} hover:${textPrimary} transition-colors`}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={generateOptimization}
-                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                  className={`px-4 py-2 ${isDarkMode ? 'bg-gray-600 hover:bg-gray-700' : 'bg-gray-600 hover:bg-gray-700'} text-white rounded-lg transition-colors`}
                 >
                   Re-optimize
                 </button>
