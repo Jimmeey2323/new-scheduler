@@ -229,7 +229,7 @@ function App() {
                       }
                     >
                       <TrendingUp className="h-5 w-5 inline mr-2" />
-                      Top Classes (>5.0)
+                      Top Classes (&gt;5.0)
                     </button>
                     
                     <button
