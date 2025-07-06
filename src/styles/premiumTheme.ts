@@ -55,51 +55,56 @@ export const premiumTheme = {
     }
   },
   gradients: {
-    primary: 'bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800',
-    secondary: 'bg-gradient-to-r from-green-600 via-green-700 to-green-800',
-    accent: 'bg-gradient-to-r from-purple-600 via-purple-700 to-purple-800',
-    surface: 'bg-gradient-to-br from-gray-50 to-gray-100',
-    card: 'bg-gradient-to-br from-white to-gray-50'
+    primary: 'bg-gradient-to-r from-blue-800 via-blue-900 to-slate-900',
+    secondary: 'bg-gradient-to-r from-green-800 via-green-900 to-slate-900',
+    accent: 'bg-gradient-to-r from-purple-800 via-purple-900 to-slate-900',
+    surface: 'bg-white',
+    card: 'bg-white border-2 border-gray-800'
   },
   shadows: {
     sm: 'shadow-sm',
     md: 'shadow-md',
-    lg: 'shadow-lg',
-    xl: 'shadow-xl',
-    premium: 'shadow-2xl shadow-blue-500/10'
+    lg: 'shadow-lg shadow-gray-800/20',
+    xl: 'shadow-xl shadow-gray-800/30',
+    premium: 'shadow-2xl shadow-gray-900/40'
   },
   borders: {
-    light: 'border-gray-200',
-    medium: 'border-gray-300',
-    dark: 'border-gray-400',
-    primary: 'border-blue-200',
-    secondary: 'border-green-200'
+    light: 'border-gray-800',
+    medium: 'border-gray-900',
+    dark: 'border-black',
+    primary: 'border-blue-800',
+    secondary: 'border-green-800'
   }
 };
 
 export const premiumClasses = {
   button: {
-    primary: 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 border border-blue-500',
-    secondary: 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 border border-green-500',
-    outline: 'border-2 border-blue-600 text-blue-700 hover:bg-blue-50 font-semibold px-6 py-3 rounded-lg transition-all duration-200',
-    ghost: 'text-gray-700 hover:bg-gray-100 font-medium px-4 py-2 rounded-lg transition-all duration-200'
+    primary: 'bg-gradient-to-r from-blue-800 via-blue-900 to-slate-900 hover:from-blue-900 hover:via-slate-900 hover:to-black text-white font-bold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 border-2 border-blue-800',
+    secondary: 'bg-gradient-to-r from-green-800 via-green-900 to-slate-900 hover:from-green-900 hover:via-slate-900 hover:to-black text-white font-bold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 border-2 border-green-800',
+    outline: 'border-3 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white font-bold px-6 py-3 rounded-lg transition-all duration-200',
+    ghost: 'text-gray-900 hover:bg-gray-900 hover:text-white font-bold px-4 py-2 rounded-lg transition-all duration-200'
   },
   card: {
-    default: 'bg-white border border-gray-200 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 p-6',
-    elevated: 'bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-200 p-6',
-    premium: 'bg-white border-2 border-blue-100 rounded-xl shadow-2xl shadow-blue-500/10 hover:shadow-blue-500/20 transition-all duration-200 p-6'
+    default: 'bg-white border-3 border-gray-900 rounded-xl shadow-xl shadow-gray-900/30 hover:shadow-2xl hover:shadow-gray-900/40 transition-all duration-200 p-6',
+    elevated: 'bg-white border-3 border-gray-900 rounded-xl shadow-2xl shadow-gray-900/40 hover:shadow-2xl hover:shadow-gray-900/50 transition-all duration-200 p-6',
+    premium: 'bg-white border-4 border-blue-900 rounded-xl shadow-2xl shadow-blue-900/40 hover:shadow-blue-900/50 transition-all duration-200 p-6'
   },
   input: {
-    default: 'border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg px-4 py-3 font-medium transition-all duration-200',
-    premium: 'border-2 border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-200 rounded-lg px-4 py-3 font-medium bg-white shadow-sm transition-all duration-200'
+    default: 'border-3 border-gray-900 focus:border-blue-900 focus:ring-4 focus:ring-blue-200 rounded-lg px-4 py-3 font-bold transition-all duration-200 bg-white',
+    premium: 'border-3 border-gray-900 focus:border-blue-900 focus:ring-4 focus:ring-blue-200 rounded-lg px-4 py-3 font-bold bg-white shadow-lg transition-all duration-200'
   },
   tab: {
-    active: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg border border-blue-500',
-    inactive: 'text-gray-600 hover:text-blue-600 hover:bg-blue-50 font-medium px-6 py-3 rounded-lg transition-all duration-200 border border-gray-200'
+    active: 'bg-gradient-to-r from-blue-800 via-blue-900 to-slate-900 text-white font-bold px-6 py-3 rounded-lg shadow-lg border-2 border-blue-800',
+    inactive: 'text-gray-900 hover:text-white hover:bg-gray-900 font-bold px-6 py-3 rounded-lg transition-all duration-200 border-2 border-gray-900'
   },
   badge: {
-    primary: 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 px-3 py-1 rounded-full font-semibold text-sm border border-blue-300',
-    secondary: 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 px-3 py-1 rounded-full font-semibold text-sm border border-green-300',
-    accent: 'bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 px-3 py-1 rounded-full font-semibold text-sm border border-purple-300'
+    primary: 'bg-gradient-to-r from-blue-800 to-blue-900 text-white px-4 py-2 rounded-full font-bold text-sm border-2 border-blue-800',
+    secondary: 'bg-gradient-to-r from-green-800 to-green-900 text-white px-4 py-2 rounded-full font-bold text-sm border-2 border-green-800',
+    accent: 'bg-gradient-to-r from-purple-800 to-purple-900 text-white px-4 py-2 rounded-full font-bold text-sm border-2 border-purple-800'
+  },
+  text: {
+    primary: 'text-gray-900 font-bold',
+    secondary: 'text-gray-800 font-semibold',
+    muted: 'text-gray-700 font-medium'
   }
 };

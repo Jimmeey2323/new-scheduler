@@ -110,23 +110,25 @@ function App() {
     <div className={`min-h-screen transition-colors duration-300 ${
       isDarkMode 
         ? 'bg-gray-900 text-white' 
-        : 'bg-gradient-to-br from-gray-50 via-white to-gray-100 text-gray-900'
+        : 'bg-white text-gray-900'
     }`}>
       {/* Header */}
       <div className={`${
         isDarkMode 
           ? 'bg-gray-800 border-gray-700' 
-          : 'bg-white border-gray-200 shadow-lg'
+          : 'bg-white border-gray-900 border-b-4 shadow-xl shadow-gray-900/30'
       } border-b transition-colors duration-300`}>
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <h1 className={`text-3xl font-bold ${
-                isDarkMode ? 'text-white' : 'bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent'
+                isDarkMode ? 'text-white' : 'text-gray-900'
               }`}>
                 Studio Scheduler Pro
               </h1>
-              <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600 font-medium'} mt-1`}>
+              <p className={`text-sm mt-1 font-bold ${
+                isDarkMode ? 'text-gray-300' : 'text-gray-800'
+              }`}>
                 AI-Powered Fitness Studio Management
               </p>
             </div>
@@ -137,7 +139,7 @@ function App() {
                 className={`p-3 rounded-lg transition-all duration-200 ${
                   isDarkMode 
                     ? 'bg-gray-700 hover:bg-gray-600 text-yellow-400' 
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
+                    : 'bg-gray-900 hover:bg-black text-yellow-400 border-2 border-gray-900'
                 }`}
                 title="Toggle theme"
               >
@@ -149,7 +151,7 @@ function App() {
                 className={`p-3 rounded-lg transition-all duration-200 ${
                   isDarkMode 
                     ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' 
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
+                    : 'bg-gray-900 hover:bg-black text-gray-300 border-2 border-gray-900'
                 }`}
                 title="Settings"
               >
@@ -162,7 +164,7 @@ function App() {
 
       {/* Main Navigation */}
       <div className={`${
-        isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200 shadow-sm'
+        isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-900 border-b-4 shadow-lg shadow-gray-900/20'
       } border-b transition-colors duration-300`}>
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap gap-2 py-4">
@@ -181,7 +183,7 @@ function App() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all duration-200 ${
                     isActive
                       ? isDarkMode
                         ? 'bg-blue-600 text-white shadow-lg'
@@ -213,8 +215,8 @@ function App() {
               <>
                 {/* Quick Actions */}
                 <div className={isDarkMode ? 'bg-gray-800 border-gray-700' : premiumClasses.card.elevated}>
-                  <h3 className={`text-xl font-semibold mb-4 ${
-                    isDarkMode ? 'text-white' : 'text-gray-800'
+                  <h3 className={`text-xl font-bold mb-4 ${
+                    isDarkMode ? 'text-white' : 'text-gray-900'
                   }`}>
                     Smart Actions
                   </h3>
@@ -245,7 +247,7 @@ function App() {
                       onClick={() => setShowAIOptimizer(true)}
                       className={isDarkMode
                         ? 'bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors'
-                        : premiumClasses.button.primary.replace('blue', 'purple')
+                        : 'bg-gradient-to-r from-purple-800 via-purple-900 to-slate-900 hover:from-purple-900 hover:via-slate-900 hover:to-black text-white font-bold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 border-2 border-purple-800'
                       }
                     >
                       <Zap className="h-5 w-5 inline mr-2" />
@@ -268,19 +270,19 @@ function App() {
                 {/* Schedule Grid */}
                 <div className={isDarkMode ? 'bg-gray-800 border-gray-700' : premiumClasses.card.default}>
                   <div className="flex justify-between items-center mb-6">
-                    <h3 className={`text-xl font-semibold ${
-                      isDarkMode ? 'text-white' : 'text-gray-800'
+                    <h3 className={`text-xl font-bold ${
+                      isDarkMode ? 'text-white' : 'text-gray-900'
                     }`}>
                       Current Schedule
                     </h3>
                     
                     {/* Time Slot Info */}
-                    <div className={`px-4 py-2 rounded-lg ${
+                    <div className={`px-4 py-2 rounded-lg font-bold ${
                       isDarkMode 
                         ? 'bg-red-900 text-red-200 border border-red-700' 
-                        : 'bg-red-50 text-red-700 border border-red-200'
+                        : 'bg-red-100 text-red-900 border-2 border-red-800'
                     }`}>
-                      <span className="font-medium">RESTRICTED: 12:00 PM - 4:00 PM</span>
+                      <span>RESTRICTED: 12:00 PM - 4:00 PM</span>
                     </div>
                   </div>
                   
