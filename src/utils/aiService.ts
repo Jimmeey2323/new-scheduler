@@ -5,8 +5,12 @@ export class AIService {
   private provider: AIProvider | null = null;
 
   constructor() {
-    // Don't set a default provider with potentially invalid key
-    this.provider = null;
+    // Set DeepSeek as default provider
+    this.provider = {
+      name: 'DeepSeek',
+      key: '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',
+      endpoint: 'https://api.deepseek.com/v1/chat/completions'
+    };
   }
 
   setProvider(provider: AIProvider) {
@@ -53,17 +57,22 @@ export class AIService {
     customTeachers: any[] = [],
     options: any = {}
   ): Promise<ScheduledClass[]> {
+    console.log('Starting AI-driven schedule optimization with enhanced logic...');
+    
     if (!this.provider || !this.provider.key || this.provider.key.trim() === '') {
       console.warn('AI provider not configured, using intelligent local optimization');
       return this.generateIntelligentLocalSchedule(historicData, currentSchedule, customTeachers, options);
     }
 
-    const prompt = this.buildAdvancedOptimizationPrompt(historicData, currentSchedule, customTeachers, options);
+    const prompt = this.buildEnhancedOptimizationPrompt(historicData, currentSchedule, customTeachers, options);
     
     try {
       const response = await this.callAI(prompt);
       const optimizedSchedule = this.parseOptimizedScheduleResponse(response, historicData);
-      return optimizedSchedule;
+      
+      // Validate and fix conflicts
+      const validatedSchedule = this.validateAndFixSchedule(optimizedSchedule, historicData);
+      return validatedSchedule;
     } catch (error) {
       console.warn('AI optimization error, falling back to intelligent local optimization:', error);
       return this.generateIntelligentLocalSchedule(historicData, currentSchedule, customTeachers, options);
@@ -234,144 +243,181 @@ export class AIService {
     `;
   }
 
-  private analyzeTimeSlotPerformance(data: ClassData[], location: string, day: string, time: string) {
-    const slotData = data.filter(item => 
-      item.location === location && 
-      item.dayOfWeek === day && 
-      item.classTime.includes(time.slice(0, 5))
-    );
-
-    if (slotData.length === 0) {
-      return { peakAttendance: 0, avgRevenue: 0, successRate: 0, bestFormat: 'N/A' };
-    }
-
-    const peakAttendance = Math.max(...slotData.map(item => item.participants));
-    const avgRevenue = slotData.reduce((sum, item) => sum + item.totalRevenue, 0) / slotData.length;
-    const avgParticipants = slotData.reduce((sum, item) => sum + item.participants, 0) / slotData.length;
-    const successRate = slotData.filter(item => item.participants > avgParticipants).length / slotData.length;
+  private buildEnhancedOptimizationPrompt(
+    historicData: ClassData[],
+    currentSchedule: ScheduledClass[],
+    customTeachers: any[],
+    options: any
+  ): string {
+    const topClasses = this.analyzeTopPerformingClasses(historicData);
+    const trainerPerformance = this.analyzeTrainerClassPerformance(historicData);
+    const studioUtilization = this.analyzeStudioUtilization(historicData);
     
-    const formatStats = slotData.reduce((acc, item) => {
-      if (!acc[item.cleanedClass]) acc[item.cleanedClass] = 0;
-      acc[item.cleanedClass] += item.participants;
+    return `
+      You are an expert AI fitness studio scheduler. Create an optimized schedule with STRICT adherence to these rules:
+
+      CRITICAL STUDIO CAPACITY RULES:
+      - Kwality House: MAX 2 parallel classes (4 studios available)
+      - Supreme HQ Bandra: MAX 3 parallel classes (3 studios available, 1 must be PowerCycle)
+      - Classes can overlap ONLY if studios are available
+      - If 2 classes at 6:00 PM, next class at 6:30 PM only if studio available, otherwise 7:00 PM
+
+      TRAINER OPTIMIZATION RULES:
+      1. Each trainer MAX 15 hours/week total
+      2. MAX 2-3 trainers per location per shift
+      3. NO trainer at multiple locations same day
+      4. NO trainer at both morning and evening shifts same day
+      5. Balance morning (7:30-14:00) and evening (17:00-21:00) classes equally
+      6. 7:30 AM class MANDATORY at Kwality House weekdays
+
+      SCHEDULING TIME RULES:
+      - Flexible timing: 7:15, 7:45, 8:15, 8:45, 10:15, 17:15, 17:45, 18:15, 18:45, 19:15, 19:45 etc.
+      - NO classes 12:00-16:00 (show as RESTRICTED in UI)
+      - NO consecutive classes same format
+      - NO trainer more than 2 consecutive classes
+
+      TOP PERFORMING CLASSES (>5.0 avg attendance):
+      ${topClasses.map(cls => `- ${cls.classFormat} with ${cls.teacher}: ${cls.avgParticipants} avg participants`).join('\n')}
+
+      TRAINER PERFORMANCE BY CLASS:
+      ${Object.entries(trainerPerformance).slice(0, 10).map(([combo, stats]: [string, any]) => 
+        `- ${combo}: ${stats.avgParticipants.toFixed(1)} avg participants, ${stats.count} classes`
+      ).join('\n')}
+
+      STUDIO UTILIZATION:
+      ${Object.entries(studioUtilization).map(([location, stats]: [string, any]) => 
+        `- ${location}: ${stats.avgUtilization.toFixed(1)}% utilization, ${stats.peakHours.join(', ')} peak hours`
+      ).join('\n')}
+
+      Generate optimized schedule in JSON format:
+      {
+        "optimizedSchedule": [
+          {
+            "day": "Monday",
+            "time": "07:30",
+            "location": "Kwality House, Kemps Corner",
+            "classFormat": "Studio Barre 57",
+            "teacherFirstName": "Anisha",
+            "teacherLastName": "",
+            "duration": "1",
+            "expectedParticipants": 12,
+            "expectedRevenue": 8000,
+            "isTopPerformer": true,
+            "studioAssigned": "Studio 1"
+          }
+        ],
+        "optimizationMetrics": {
+          "totalClasses": 70,
+          "morningClasses": 35,
+          "eveningClasses": 35,
+          "avgTrainerUtilization": 14.2,
+          "studioUtilization": 0.85,
+          "projectedRevenue": 650000
+        }
+      }
+
+      ENSURE:
+      - Exactly 15 hours per trainer across all classes
+      - Perfect morning/evening balance
+      - No studio capacity violations
+      - 7:30 AM start at Kwality House weekdays
+      - Smart time slot optimization using flexible timing
+    `;
+  }
+
+  private analyzeTopPerformingClasses(data: ClassData[]) {
+    const classPerformance = data.reduce((acc, item) => {
+      const key = `${item.cleanedClass}_${item.teacherName}`;
+      if (!acc[key]) {
+        acc[key] = { participants: 0, count: 0, classFormat: item.cleanedClass, teacher: item.teacherName };
+      }
+      acc[key].participants += item.participants;
+      acc[key].count += 1;
       return acc;
     }, {} as any);
-    
-    const bestFormat = Object.entries(formatStats).sort((a: any, b: any) => b[1] - a[1])[0]?.[0] || 'N/A';
 
-    return { peakAttendance, avgRevenue, successRate, bestFormat };
+    return Object.values(classPerformance)
+      .map((item: any) => ({
+        classFormat: item.classFormat,
+        teacher: item.teacher,
+        avgParticipants: item.participants / item.count
+      }))
+      .filter(item => item.avgParticipants > 5.0)
+      .sort((a, b) => b.avgParticipants - a.avgParticipants)
+      .slice(0, 20);
   }
 
-  private analyzeCompetitorSlots(data: ClassData[], location: string, day: string, time: string) {
-    const hour = parseInt(time.split(':')[0]);
-    const similarSlots = data.filter(item => {
-      const itemHour = parseInt(item.classTime.split(':')[0]);
-      return item.location === location && 
-             item.dayOfWeek === day && 
-             Math.abs(itemHour - hour) <= 1; // Within 1 hour
-    });
-
-    const similarSlotsAvg = similarSlots.length > 0 
-      ? similarSlots.reduce((sum, item) => sum + item.participants, 0) / similarSlots.length 
-      : 0;
-
-    // Calculate opportunity score based on performance gaps
-    const opportunityScore = Math.min(10, Math.max(1, 
-      (similarSlotsAvg > 8 ? 9 : similarSlotsAvg > 5 ? 7 : 5) + 
-      (similarSlots.length > 10 ? 1 : 0)
-    ));
-
-    return { similarSlotsAvg, opportunityScore };
+  private analyzeTrainerClassPerformance(data: ClassData[]) {
+    return data.reduce((acc, item) => {
+      const key = `${item.teacherName} - ${item.cleanedClass}`;
+      if (!acc[key]) {
+        acc[key] = { participants: 0, count: 0 };
+      }
+      acc[key].participants += item.participants;
+      acc[key].count += 1;
+      acc[key].avgParticipants = acc[key].participants / acc[key].count;
+      return acc;
+    }, {} as any);
   }
 
-  private analyzeLocationPerformance(data: ClassData[]) {
+  private analyzeStudioUtilization(data: ClassData[]) {
     const locations = ['Kwality House, Kemps Corner', 'Supreme HQ, Bandra', 'Kenkere House'];
     
     return locations.reduce((acc, location) => {
       const locationData = data.filter(item => item.location === location);
-      if (locationData.length === 0) {
-        acc[location] = { avgParticipants: 0, totalClasses: 0, avgRevenue: 0 };
-        return acc;
-      }
-
+      const hourly = locationData.reduce((hourAcc, item) => {
+        const hour = item.classTime.slice(0, 2);
+        hourAcc[hour] = (hourAcc[hour] || 0) + 1;
+        return hourAcc;
+      }, {} as any);
+      
+      const peakHours = Object.entries(hourly)
+        .sort((a: any, b: any) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([hour]) => `${hour}:00`);
+      
       acc[location] = {
-        avgParticipants: locationData.reduce((sum, item) => sum + item.participants, 0) / locationData.length,
-        totalClasses: locationData.length,
-        avgRevenue: locationData.reduce((sum, item) => sum + item.totalRevenue, 0) / locationData.length
+        avgUtilization: (locationData.length / 50) * 100, // Assuming 50 as max possible
+        peakHours
       };
       return acc;
     }, {} as any);
   }
 
-  private analyzeTeacherUtilization(schedule: ScheduledClass[]) {
-    return schedule.reduce((acc, cls) => {
+  private validateAndFixSchedule(schedule: ScheduledClass[], historicData: ClassData[]): ScheduledClass[] {
+    // Implement validation and auto-fixing logic
+    const validatedSchedule = [...schedule];
+    
+    // Check trainer hour limits
+    const trainerHours = validatedSchedule.reduce((acc, cls) => {
       const teacher = `${cls.teacherFirstName} ${cls.teacherLastName}`;
       acc[teacher] = (acc[teacher] || 0) + parseFloat(cls.duration);
       return acc;
     }, {} as any);
-  }
-
-  private generateIntelligentLocalSchedule(
-    historicData: ClassData[],
-    currentSchedule: ScheduledClass[],
-    customTeachers: any[],
-    options: any
-): ScheduledClass[] {
-    // Use the enhanced generateIntelligentSchedule function from classUtils
-    return generateIntelligentSchedule(historicData, customTeachers, {
-      prioritizeTopPerformers: true,
-      balanceShifts: true,
-      optimizeTeacherHours: true,
-      respectTimeRestrictions: true,
-      minimizeTrainersPerShift: true,
-      iteration: options.iteration || 0
-    });
-  }
-
-  private parseOptimizedScheduleResponse(response: string, historicData: ClassData[]): ScheduledClass[] {
-    try {
-      const parsed = JSON.parse(response);
-      const schedule = parsed.optimizedSchedule || [];
-      
-      return schedule.map((cls: any, index: number) => ({
-        id: `ai-optimized-${Date.now()}-${index}`,
-        day: cls.day,
-        time: cls.time,
-        location: cls.location,
-        classFormat: cls.classFormat,
-        teacherFirstName: cls.teacherFirstName,
-        teacherLastName: cls.teacherLastName,
-        duration: cls.duration || '1',
-        participants: cls.expectedParticipants,
-        revenue: cls.expectedRevenue,
-        isTopPerformer: cls.isTopPerformer || cls.priority >= 8
-      }));
-    } catch (error) {
-      console.error('Failed to parse optimized schedule response:', error);
-      return this.generateIntelligentLocalSchedule(historicData, [], [], {});
-    }
-  }
-
-  async optimizeSchedule(
-    historicData: ClassData[],
-    currentSchedule: ScheduledClass[],
-    teacherAvailability: any = {}
-  ): Promise<OptimizationSuggestion[]> {
-    // Always return fallback optimizations if no provider is configured or key is missing
-    if (!this.provider || !this.provider.key || this.provider.key.trim() === '') {
-      console.warn('AI provider not configured or missing API key, using fallback optimizations');
-      return this.getFallbackOptimizations(historicData, currentSchedule);
-    }
-
-    const prompt = this.buildOptimizationPrompt(historicData, currentSchedule, teacherAvailability);
     
-    try {
-      const response = await this.callAI(prompt);
-      const suggestions = this.parseOptimizationResponse(response);
-      return suggestions.sort((a, b) => b.priority - a.priority);
-    } catch (error) {
-      console.warn('AI optimization error, falling back to local optimizations:', error);
-      return this.getFallbackOptimizations(historicData, currentSchedule);
-    }
+    // Remove classes if trainer exceeds 15 hours
+    Object.entries(trainerHours).forEach(([teacher, hours]) => {
+      if (hours > 15) {
+        console.log(`Fixing overallocation for ${teacher}: ${hours} hours`);
+        // Remove lowest performing classes for this trainer
+        const teacherClasses = validatedSchedule
+          .filter(cls => `${cls.teacherFirstName} ${cls.teacherLastName}` === teacher)
+          .sort((a, b) => (a.participants || 0) - (b.participants || 0));
+        
+        let hoursToRemove = hours - 15;
+        teacherClasses.forEach(cls => {
+          if (hoursToRemove > 0) {
+            const index = validatedSchedule.findIndex(c => c.id === cls.id);
+            if (index > -1) {
+              validatedSchedule.splice(index, 1);
+              hoursToRemove -= parseFloat(cls.duration);
+            }
+          }
+        });
+      }
+    });
+    
+    return validatedSchedule;
   }
 
   private buildOptimizationPrompt(
@@ -598,7 +644,7 @@ export class AIService {
     const teacherHours: Record<string, number> = {};
     currentSchedule.forEach(cls => {
       const teacherName = `${cls.teacherFirstName} ${cls.teacherLastName}`;
-      teacherHours[teacherName] = (teacherHours[teacherName] || 0) + parseFloat(cls.duration || '1');
+      teacherHours[teacherName] = (teacherHours[teacherName] || 0) + parseFloat(cls.duration);
     });
 
     // Suggest redistributing hours for overloaded teachers
