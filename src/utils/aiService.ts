@@ -1,12 +1,48 @@
-import { ClassData, ScheduledClass, CustomTeacher } from '../types';
+import { ClassData, ScheduledClass, CustomTeacher, AIRecommendation } from '../types';
 
 export class AIService {
   private apiKey: string;
   private apiUrl: string;
+  private provider: string = 'openai';
 
   constructor() {
     this.apiKey = process.env.NEXT_PUBLIC_OPENAI_API_KEY || '';
     this.apiUrl = 'https://api.openai.com/v1/chat/completions';
+  }
+
+  public setProvider(provider: string) {
+    this.provider = provider;
+  }
+
+  public async generateRecommendations(
+    csvData: ClassData[],
+    day: string,
+    time: string,
+    location: string
+  ): Promise<AIRecommendation[]> {
+    try {
+      const topClasses = csvData
+        .filter(item => item.dayOfWeek === day && item.location === location)
+        .sort((a, b) => b.participants - a.participants)
+        .slice(0, 5);
+
+      const recommendations: AIRecommendation[] = topClasses.map(cls => ({
+        classFormat: cls.cleanedClass,
+        teacher: cls.teacherName,
+        reasoning: `High performing class with ${cls.participants} average participants`,
+        confidence: 0.8,
+        expectedParticipants: cls.participants,
+        expectedRevenue: cls.totalRevenue,
+        priority: cls.participants > 10 ? 5 : 3,
+        timeSlot: time,
+        location: location
+      }));
+
+      return recommendations;
+    } catch (error) {
+      console.error('Error generating recommendations:', error);
+      return [];
+    }
   }
 
   public async generateSchedule(
