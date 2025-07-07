@@ -21,6 +21,7 @@ import TeacherHourTracker from './components/TeacherHourTracker';
 import ClassModal from './components/ClassModal';
 import SmartOptimizer from './components/SmartOptimizer';
 import DailyAIOptimizer from './components/DailyAIOptimizer';
+import TopClassesModal from './components/TopClassesModal';
 import ExportModal from './components/ExportModal';
 import StudioSettings from './components/StudioSettings';
 import { ClassData, ScheduledClass, CustomTeacher, TeacherAvailability } from './types';
@@ -326,7 +327,6 @@ function App() {
             <MonthlyView 
               scheduledClasses={scheduledClasses}
               csvData={csvData}
-              isDarkMode={isDarkMode}
             />
           </div>
         )}
@@ -336,7 +336,6 @@ function App() {
             <YearlyView 
               scheduledClasses={scheduledClasses}
               csvData={csvData}
-              isDarkMode={isDarkMode}
             />
           </div>
         )}
@@ -346,7 +345,6 @@ function App() {
             <AnalyticsView 
               csvData={csvData}
               scheduledClasses={scheduledClasses}
-              isDarkMode={isDarkMode}
             />
           </div>
         )}
@@ -354,7 +352,6 @@ function App() {
         {activeTab === 'tracker' && (
           <div className={isDarkMode ? 'bg-gray-800 rounded-lg' : premiumClasses.card.default}>
             <TeacherHourTracker 
-              scheduledClasses={scheduledClasses}
               csvData={csvData}
               isDarkMode={isDarkMode}
             />
@@ -367,10 +364,25 @@ function App() {
         <ClassModal
           isOpen={!!selectedClass}
           onClose={() => setSelectedClass(null)}
-          selectedClass={selectedClass}
+          classData={selectedClass}
           onUpdate={handleClassUpdate}
           onDelete={handleClassDelete}
           csvData={csvData}
+          isDarkMode={isDarkMode}
+        />
+      )}
+
+      {showTopClasses && (
+        <TopClassesModal
+          isOpen={showTopClasses}
+          onClose={() => setShowTopClasses(false)}
+          csvData={csvData}
+          onScheduleClasses={(classes) => {
+            const updatedClasses = [...scheduledClasses, ...classes];
+            setScheduledClasses(updatedClasses);
+            saveScheduledClasses(updatedClasses);
+            setShowTopClasses(false);
+          }}
           isDarkMode={isDarkMode}
         />
       )}
@@ -392,7 +404,6 @@ function App() {
           onClose={() => setShowAIOptimizer(false)}
           csvData={csvData}
           currentSchedule={scheduledClasses}
-          customTeachers={customTeachers}
           onOptimize={handleOptimizedSchedule}
           isDarkMode={isDarkMode}
         />
@@ -403,7 +414,6 @@ function App() {
           isOpen={showExportModal}
           onClose={() => setShowExportModal(false)}
           scheduledClasses={scheduledClasses}
-          isDarkMode={isDarkMode}
         />
       )}
 
@@ -412,9 +422,9 @@ function App() {
           isOpen={showSettings}
           onClose={() => setShowSettings(false)}
           customTeachers={customTeachers}
-          onCustomTeachersUpdate={handleCustomTeachersUpdate}
+          onUpdate={handleCustomTeachersUpdate}
           teacherAvailability={teacherAvailability}
-          onTeacherAvailabilityUpdate={handleTeacherAvailabilityUpdate}
+          onAvailabilityUpdate={handleTeacherAvailabilityUpdate}
           isDarkMode={isDarkMode}
         />
       )}

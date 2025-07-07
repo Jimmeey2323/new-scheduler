@@ -1,3 +1,4 @@
+
 import { ClassData, ScheduledClass, CustomTeacher, TopPerformingClass } from '../types';
 
 export interface LocationClassCounts {
@@ -191,9 +192,8 @@ export const getTopPerformingClasses = (data: ClassData[], location?: string): T
   return topClasses;
 };
 
-// Additional utility functions needed by components
+// Additional utility functions
 export const getClassDuration = (classFormat: string): number => {
-  // Most classes are 1 hour, some specific formats might be different
   const longClasses = ['Workshop', 'Masterclass'];
   return longClasses.some(format => classFormat.includes(format)) ? 1.5 : 1;
 };
@@ -209,32 +209,45 @@ export const getClassAverageForSlot = (
   location: string, 
   day: string, 
   time: string, 
-  classFormat: string
-): number => {
+  classFormat?: string
+): { average: number; count: number } => {
   const relevantClasses = data.filter(item => 
     item.location === location && 
     item.dayOfWeek === day && 
     item.classTime.includes(time.slice(0, 5)) &&
-    item.cleanedClass === classFormat
+    (!classFormat || item.cleanedClass === classFormat)
   );
   
-  if (relevantClasses.length === 0) return 0;
+  if (relevantClasses.length === 0) return { average: 0, count: 0 };
   
   const totalParticipants = relevantClasses.reduce((sum, cls) => sum + cls.participants, 0);
-  return totalParticipants / relevantClasses.length;
+  return {
+    average: totalParticipants / relevantClasses.length,
+    count: relevantClasses.length
+  };
 };
 
 export const getBestTeacherForClass = (
   data: ClassData[], 
   classFormat: string, 
-  location: string
-): string => {
-  const relevantData = data.filter(item => 
+  location: string,
+  day?: string,
+  time?: string
+): { teacher: string; average: number } => {
+  let relevantData = data.filter(item => 
     item.cleanedClass === classFormat && 
     item.location === location
   );
   
-  if (relevantData.length === 0) return 'Best Available';
+  if (day) {
+    relevantData = relevantData.filter(item => item.dayOfWeek === day);
+  }
+  
+  if (time) {
+    relevantData = relevantData.filter(item => item.classTime.includes(time.slice(0, 5)));
+  }
+  
+  if (relevantData.length === 0) return { teacher: 'Best Available', average: 0 };
   
   const teacherStats = relevantData.reduce((acc, item) => {
     if (!acc[item.teacherName]) {
@@ -248,11 +261,11 @@ export const getBestTeacherForClass = (
   const bestTeacher = Object.entries(teacherStats)
     .map(([teacher, stats]: [string, any]) => ({
       teacher,
-      avgParticipants: stats.participants / stats.count
+      average: stats.participants / stats.count
     }))
-    .sort((a, b) => b.avgParticipants - a.avgParticipants)[0];
+    .sort((a, b) => b.average - a.average)[0];
   
-  return bestTeacher?.teacher || 'Best Available';
+  return bestTeacher || { teacher: 'Best Available', average: 0 };
 };
 
 export const getUniqueTeachers = (data: ClassData[]): string[] => {
@@ -270,34 +283,33 @@ export const getClassFormatsForDay = (data: ClassData[], day: string, location: 
 };
 
 export const isClassAllowedAtLocation = (classFormat: string, location: string): boolean => {
-  // Supreme HQ Bandra only allows PowerCycle
   if (location === 'Supreme HQ, Bandra') {
     return classFormat.toLowerCase().includes('powercycle') || classFormat.toLowerCase().includes('cycle');
   }
   
-  // Other locations don't allow PowerCycle
   return !classFormat.toLowerCase().includes('powercycle') && !classFormat.toLowerCase().includes('cycle');
 };
 
-export const getTimeSlotsWithData = (data: ClassData[]): string[] => {
-  const timeSlots = new Set(data.map(item => item.classTime.slice(0, 5)));
-  return Array.from(timeSlots).sort();
+export const getTimeSlotsWithData = (data: ClassData[], location?: string): Set<string> => {
+  const filteredData = location ? data.filter(item => item.location === location) : data;
+  const timeSlots = new Set(filteredData.map(item => item.classTime.slice(0, 5)));
+  return timeSlots;
 };
 
 export const getClassesAtTimeSlot = (
-  data: ClassData[], 
-  location: string, 
+  scheduledClasses: ScheduledClass[], 
   day: string, 
-  time: string
-): ClassData[] => {
-  return data.filter(item => 
-    item.location === location && 
-    item.dayOfWeek === day && 
-    item.classTime.includes(time)
+  time: string, 
+  location?: string
+): ScheduledClass[] => {
+  return scheduledClasses.filter(cls => 
+    cls.day === day && 
+    cls.time === time &&
+    (!location || cls.location === location)
   );
 };
 
-export const getAvailableTimeSlots = (): string[] => {
+export const getAvailableTimeSlots = (day?: string): string[] => {
   return [
     '07:00', '07:30', '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
     '17:30', '18:00', '18:30', '19:00', '19:30', '20:00'
@@ -314,7 +326,7 @@ export const getRestrictedTimeSlots = (): string[] => {
   return restricted;
 };
 
-export const isTimeRestricted = (time: string): boolean => {
+export const isTimeRestricted = (time: string, day?: string): boolean => {
   const hour = parseInt(time.split(':')[0]);
   return hour >= 12 && hour < 16;
 };

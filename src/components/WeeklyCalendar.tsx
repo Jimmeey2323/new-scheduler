@@ -33,7 +33,7 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   
   // Get all time slots including restricted ones
-  const availableTimeSlots = getAvailableTimeSlots('Monday'); // Same for all days
+  const availableTimeSlots = getAvailableTimeSlots();
   const restrictedTimeSlots = getRestrictedTimeSlots();
   const allTimeSlots = [...availableTimeSlots, ...restrictedTimeSlots].sort();
 
@@ -167,7 +167,7 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
     const slotKey = `${day}-${time}`;
     const currentIndex = currentSlotIndex[slotKey] || 0;
     const currentClass = scheduledClassesInSlot[currentIndex];
-    const isRestricted = isTimeRestricted(time, day);
+    const isRestricted = isTimeRestricted(time);
     const hasPrivateClass = scheduledClassesInSlot.some(cls => cls.isPrivate);
     
     // Apply filters
@@ -691,7 +691,7 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
                   <div>
                     <div className="font-semibold flex items-center">
                       {time}
-                      {isTimeRestricted(time, 'Monday') && (
+                      {isTimeRestricted(time) && (
                         <AlertTriangle className="h-3 w-3 ml-2 text-red-400" />
                       )}
                     </div>
