@@ -352,7 +352,7 @@ function App() {
         {activeTab === 'tracker' && (
           <div className={isDarkMode ? 'bg-gray-800 rounded-lg' : premiumClasses.card.default}>
             <TeacherHourTracker 
-              csvData={csvData}
+              scheduledClasses={scheduledClasses}
               isDarkMode={isDarkMode}
             />
           </div>
@@ -364,7 +364,7 @@ function App() {
         <ClassModal
           isOpen={!!selectedClass}
           onClose={() => setSelectedClass(null)}
-          classData={selectedClass}
+          selectedClass={selectedClass}
           onUpdate={handleClassUpdate}
           onDelete={handleClassDelete}
           csvData={csvData}
@@ -422,9 +422,9 @@ function App() {
           isOpen={showSettings}
           onClose={() => setShowSettings(false)}
           customTeachers={customTeachers}
-          onUpdate={handleCustomTeachersUpdate}
+          onUpdateTeachers={handleCustomTeachersUpdate}
           teacherAvailability={teacherAvailability}
-          onAvailabilityUpdate={handleTeacherAvailabilityUpdate}
+          onUpdateAvailability={handleTeacherAvailabilityUpdate}
           isDarkMode={isDarkMode}
         />
       )}
